@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Frame Media Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Tailwind CSS v2.2.19 -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome v6.5.2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <!-- Google Fonts: Roboto -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f3f4f6;
+      font-family: 'Roboto', 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #22223b;
+    }
+    .fade-in { animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; }}
+    .player-controls {
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      transition: bottom 0.3s ease;
+      z-index: 25;
+    }
+    .media-frame:hover .player-controls {
+      bottom: 0;
+    }
+    .control-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .control-button:hover {
+      color: #ff0000;
+    }
+    .progress-container {
+      flex-grow: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      margin: 0 15px;
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #ff0000;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.35s;
+    }
+    @media (max-width: 600px) {
+      .category-row {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      .media-frame {
+        width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-2 text-gray-800">
+
+
+  <!-- Header: Logo & Name -->
+  <header class="w-full max-w-5xl mx-auto mb-4 flex flex-col md:flex-row items-center justify-between px-2 gap-3">
+    <div class="flex items-center gap-3">
+      <span class="text-4xl text-red-600"><i class="fas fa-film"></i></span>
+      <span class="text-2xl md:text-3xl font-bold tracking-tight" style="font-family:'Roboto', Arial, sans-serif;">MyMediaWebsite</span>
+    </div>
+    <!-- Signup Link (shows only once and applies everywhere) -->
+    <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+       class="rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base md:text-lg mt-2 md:mt-0"
+       style="white-space:nowrap;">
+      <i class="fas fa-user-plus mr-2"></i>Free Sign Up Here
+    </a>
+  </header>
+
+
+  <!-- Main Content Structure -->
+  <main class="w-full max-w-5xl mx-auto">
+
+
+    <!-- Top Frame Section (like large hero/content section) -->
+    <div class="w-full flex flex-row md:gap-6 gap-2 mb-8 items-stretch">
+      <div class="flex-1 flex flex-col justify-center items-center">
+        <div class="media-frame shadow-xl rounded-xl bg-black overflow-hidden relative w-full aspect-w-16 aspect-h-9 min-h-[160px]" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full" style="height:100%;">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-xl" style="display: block;"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-xl" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-xl"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline
+                   webkit-playsinline
+                   crossorigin="anonymous">
+              <source src="https://i.ytimg.com/vi/g__5NuRsRUE/mqdefault.jpg" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-16 h-16 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-2xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-10 w-10 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-3">
+                <div class="text-white text-xl font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control">
+                  <i class="fas fa-play"></i>
+                </button>
+                <button class="control-button volume-control">
+                  <i class="fas fa-volume-up"></i>
+                </button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control">
+                  <i class="fas fa-cog"></i>
+                </button>
+                <button class="control-button fullscreen-control">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Center frame (highlighted as 'frame 1' in your sketch) -->
+      <div class="flex-[2] flex flex-col justify-center items-center">
+        <div class="media-frame shadow-xl rounded-xl bg-black overflow-hidden relative w-full aspect-w-16 aspect-h-9 min-h-[160px]" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full" style="height:100%;">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-xl" style="display: block;"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-xl" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-xl"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline
+                   webkit-playsinline
+                   crossorigin="anonymous">
+              <source src="https://liveindia.tv/wp-content/uploads/2025/01/trailer_war-2.jpg" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-16 h-16 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-2xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-10 w-10 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-3">
+                <div class="text-white text-xl font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control">
+                  <i class="fas fa-play"></i>
+                </button>
+                <button class="control-button volume-control">
+                  <i class="fas fa-volume-up"></i>
+                </button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control">
+                  <i class="fas fa-cog"></i>
+                </button>
+                <button class="control-button fullscreen-control">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Right frame -->
+      <div class="flex-1 flex flex-col justify-center items-center">
+        <div class="media-frame shadow-xl rounded-xl bg-black overflow-hidden relative w-full aspect-w-16 aspect-h-9 min-h-[160px]" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full" style="height:100%;">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-xl" style="display: block;"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-xl" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-xl"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline
+                   webkit-playsinline
+                   crossorigin="anonymous">
+              <source src="https://liveindia.tv/wp-content/uploads/2025/01/Housefull5.jpg" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-16 h-16 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-2xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-10 w-10 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-3">
+                <div class="text-white text-xl font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control">
+                  <i class="fas fa-play"></i>
+                </button>
+                <button class="control-button volume-control">
+                  <i class="fas fa-volume-up"></i>
+                </button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control">
+                  <i class="fas fa-cog"></i>
+                </button>
+                <button class="control-button fullscreen-control">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Category Section 1 -->
+    <div class="w-full mb-8">
+      <div class="text-lg font-bold mb-2 text-red-800">Category 1</div>
+      <div class="flex flex-row gap-5 mb-2 category-row">
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://liveindia.tv/wp-content/uploads/2025/01/YRF_Alpha.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://liveindia.tv/wp-content/uploads/2025/01/Sikandar.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://wp.scoopwhoop.com/wp-content/uploads/2023/09/5-2.png" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-row gap-5 mb-2 category-row">
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://wp.scoopwhoop.com/wp-content/uploads/2024/12/11151741/image-160.png" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://wp.scoopwhoop.com/wp-content/uploads/2023/09/5B.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://wp.scoopwhoop.com/wp-content/uploads/2023/09/6B.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Category Section 2 -->
+    <div class="w-full mb-8">
+      <div class="text-lg font-bold mb-2 text-red-800">Category 2</div>
+      <div class="flex flex-row gap-5 category-row">
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://m.media-amazon.com/images/M/MV5BYzYxNGI3MmYtMWQyMi00NmViLWE0ZWQtNWM5ZTY3NTIxNzU0XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://cdn.bollywoodmdb.com/fit-in/movies/largethumb/2020/satyameva-jayate-2/satyameva-jayate-2-poster-5.jpg" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="media-frame shadow-lg rounded-lg bg-black overflow-hidden relative w-1/3 min-w-[180px] aspect-w-16 aspect-h-9" style="aspect-ratio:16/9;">
+          <div class="player-aspect relative w-full h-full">
+            <canvas class="thumbnail-canvas absolute top-0 left-0 w-full h-full object-cover z-0 bg-black rounded-lg"></canvas>
+            <img class="image-display absolute top-0 left-0 w-full h-full object-contain z-5 rounded-lg" style="display: none;" alt="Media content"/>
+            <video class="video absolute top-0 left-0 w-full h-full object-contain z-10 rounded-lg"
+                   preload="auto"
+                   style="display:none;"
+                   playsinline webkit-playsinline crossorigin="anonymous">
+              <source src="https://wp.scoopwhoop.com/wp-content/uploads/2024/12/11162758/image-173-1024x571.png" type="video/mp4">
+            </video>
+            <button class="play-btn absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-black bg-opacity-50 rounded-full w-12 h-12 hover:bg-opacity-70 transition-all focus:outline-none border-4 border-white shadow-lg">
+              <i class="fas fa-play text-white text-xl"></i>
+            </button>
+            <div class="loading-overlay absolute inset-0 z-30 flex items-center justify-center bg-black bg-opacity-40" style="display:none;">
+              <svg class="animate-spin h-7 w-7 text-red-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10"
+                  stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="signup-overlay absolute inset-0 z-40 flex flex-col items-center justify-center bg-black bg-opacity-40 fade-in" style="display:none;">
+              <div class="text-center space-y-2">
+                <div class="text-white text-lg font-bold mb-2 flex items-center justify-center">
+                  <i class="fas fa-lock mr-2"></i>
+                  Please create free account to watch full video
+                </div>
+                <a href="https://refreshmentwisertowards.com/fmgc1mbj7i?key=6c1de2c7c0334d3a7cc09645f9317d19" target="_blank"
+                  class="inline-block rounded-lg px-6 py-2 bg-red-600 bg-opacity-80 text-white font-semibold shadow hover:bg-red-700 transition-all text-base"
+                  style="backdrop-filter: blur(1px);">
+                  Free Sign Up Here
+                </a>
+              </div>
+            </div>
+            <img class="hidden-thumbnail-fallback" style="display: none;" alt="Thumbnail fallback"/>
+            <div class="player-controls">
+              <div class="controls-left flex items-center">
+                <button class="control-button play-control"><i class="fas fa-play"></i></button>
+                <button class="control-button volume-control"><i class="fas fa-volume-up"></i></button>
+              </div>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+              <div class="controls-right flex items-center">
+                <button class="control-button settings-control"><i class="fas fa-cog"></i></button>
+                <button class="control-button fullscreen-control"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </main>
+
+
+  <!-- Banner Ad Container (shown once) -->
+  <div class="w-full max-w-2xl mx-auto mt-4 mb-8 flex justify-center">
+    <script type="text/javascript">
+      atOptions = {'key':'a16f6c5c2f97f550337197a3f2b77312','format':'iframe','height':90,'width':728,'params':{}};
+    </script>
+    <script type="text/javascript" src="//refreshmentwisertowards.com/a16f6c5c2f97f550337197a3f2b77312/invoke.js"></script>
+  </div>
+
+
+  <!-- Video Player Script for all frames (applies functionality to each media frame, individually) -->
+  <script>
+    // Helper function to manage each player
+    function isImageURL(url) {
+      return /\.(jpg|jpeg|png|gif|bmp|webp|svg|avif)$/i.test(url);
+    }
+    function setupMediaFrame(frame) {
+      const video      = frame.querySelector('.video');
+      const aspectDiv  = frame.querySelector('.player-aspect');
+      const thumbnail  = frame.querySelector('.thumbnail-canvas');
+      const playBtn    = frame.querySelector('.play-btn');
+      const loading    = frame.querySelector('.loading-overlay');
+      const signup     = frame.querySelector('.signup-overlay');
+      const fallbackImg= frame.querySelector('.hidden-thumbnail-fallback');
+      const imageDisplay = frame.querySelector('.image-display');
+      // Controls
+      const playControl = frame.querySelector('.play-control');
+      const volumeControl = frame.querySelector('.volume-control');
+      const settingsControl = frame.querySelector('.settings-control');
+      const fullscreenControl = frame.querySelector('.fullscreen-control');
+      const progressBar = frame.querySelector('.progress-bar');
+      // Get the source to identify if it's image/video
+      const srcTag = video.querySelector('source');
+      const mediaSrc = srcTag ? srcTag.getAttribute('src') : "";
+      const isImage = isImageURL(mediaSrc);
+
+
+      // Handle image or video setup
+      if (isImage) {
+        imageDisplay.src = mediaSrc;
+        imageDisplay.style.display = 'block';
+        imageDisplay.onload = function() {
+          setAspectRatio(this.naturalWidth, this.naturalHeight);
+          thumbnail.style.display = 'none';
+        };
+        video.style.display = 'none';
+      } else {
+        video.load();
+      }
+      function setAspectRatio(width, height) {
+        if (width && height) {
+          aspectDiv.style.paddingBottom = ((height / width) * 100) + "%";
+        } else {
+          aspectDiv.style.paddingBottom = "56.25%";
+        }
+      }
+      function drawFirstFrame() {
+        if (isImage) return;
+        thumbnail.style.display = 'none';
+        fallbackImg.style.display = 'none';
+        function capture() {
+          try {
+            if (!video) return;
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            if (vw === 0 || vh === 0) return;
+            setAspectRatio(vw, vh);
+            thumbnail.width = vw;
+            thumbnail.height = vh;
+            const ctx = thumbnail.getContext('2d');
+            ctx.clearRect(0,0,vw,vh);
+            ctx.drawImage(video, 0, 0, vw, vh);
+            thumbnail.style.display = 'block';
+          } catch (e) {
+            thumbnail.style.display = 'none';
+            fallbackImg.style.display = 'none';
+          }
+          video.currentTime = 0;
+        }
+        function onSeekedOnce() {
+          video.removeEventListener('seeked', onSeekedOnce); setTimeout(capture, 50);
+        }
+        video.addEventListener('seeked', onSeekedOnce);
+        try { video.currentTime = 0.1; } catch(e){}
+      }
+      if (video) {
+        video.addEventListener('loadedmetadata', function() {
+          if (isImage) return;
+          setAspectRatio(video.videoWidth, video.videoHeight);
+          drawFirstFrame();
+        });
+      }
+      playBtn.addEventListener('click', function() {
+        playBtn.style.display = 'none';
+        loading.style.display = 'flex';
+        setTimeout(() => {
+          loading.style.display = 'none';
+          signup.style.display = 'flex';
+        }, 1000);
+      });
+      playControl.addEventListener('click', function() {
+        playBtn.click();
+      });
+      // On startup -- show only thumbnail and play
+      signup.style.display = 'none';
+      loading.style.display = 'none';
+      playBtn.style.display = 'flex';
+      if (!isImage) {
+        video.style.display = 'none';
+        imageDisplay.style.display = 'none';
+      } else {
+        thumbnail.style.display = 'none';
+        video.style.display = 'none';
+      }
+      // Set initial progress bar (just for effect)
+      progressBar.style.width = '0%';
+      // Fake progress bar animation after play/click
+      let fakeProgress = 0;
+      setInterval(() => {
+        if (signup.style.display === 'flex') {
+          fakeProgress = Math.min(fakeProgress + 0.5, 30);
+          progressBar.style.width = fakeProgress + '%';
+        }
+      }, 1000);
+      // Responsive aspect
+      window.addEventListener('resize', function() {
+        if (isImage && imageDisplay.naturalWidth > 0) {
+          setAspectRatio(imageDisplay.naturalWidth, imageDisplay.naturalHeight);
+        } else if (!isImage && video.videoWidth > 0) {
+          setAspectRatio(video.videoWidth, video.videoHeight);
+        }
+      });
+    }
+    // Set up all frames on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.media-frame').forEach(setupMediaFrame);
+    });
+  </script>
+</body>
+</html>
